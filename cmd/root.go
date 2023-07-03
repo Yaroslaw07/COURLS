@@ -5,7 +5,6 @@ import (
 	scrapper "github/Yarlaw07/Courls/pkg"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -19,21 +18,15 @@ var rootCmd = &cobra.Command{
 
 		url := getUrl(args)
 
-		ex, err := os.Executable()
-
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println(filepath.Dir(ex))
-
-		file, _ := os.Create("file.txt")
-
-		c := scrapper.GetScrapper(url, file)
-
-		fmt.Fprintln(file)
+		// file
+		filePath, _ := cmd.Flags().GetString("filepath")
+		file := getFile(filePath)
 
 		defer file.Close()
+
+		limit, _ := cmd.Flags().GetInt("limit")
+
+		c := scrapper.GetScrapper(url, file, limit)
 
 		c.Visit(url)
 	},
@@ -54,6 +47,27 @@ func getUrl(args []string) string {
 	return url
 }
 
+func getFile(filePath string) *os.File {
+
+	if filePath == "" {
+		file, err := os.Create("res.txt")
+
+		if err != nil {
+			log.Fatalln("Can't create file in current folder")
+		}
+
+		return file
+	}
+
+	file, err := os.Create(filePath)
+
+	if err != nil {
+		log.Fatalln("Can't create file in given directory")
+	}
+
+	return file
+}
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -63,4 +77,5 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().StringP("filepath", "f", "", "specify filepath to resFile")
+	rootCmd.Flags().IntP("limit", "l", 1000000, "specify limit of links")
 }
