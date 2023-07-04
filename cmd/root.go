@@ -29,6 +29,10 @@ var rootCmd = &cobra.Command{
 		c := scrapper.GetScrapper(url, file, limit)
 
 		c.Visit(url)
+
+		fmt.Fprintln(file,"-----------------------")
+		fmt.Fprintln(file,scrapper.Count)
+	
 	},
 }
 
